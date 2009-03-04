@@ -48,7 +48,7 @@ except ImportError:
 
 class EventLoop(pyglet_event_loop):
 
-    def __init__(self, twisted_queue):
+    def __init__(self, twisted_queue=None):
         """Set up extra cruft to integrate Twisted calls."""
 
         pyglet_event_loop.__init__(self)
@@ -56,10 +56,14 @@ class EventLoop(pyglet_event_loop):
         if not hasattr(self, "clock"):
             # This is not defined in Pyglet 1.1
             self.clock = pyglet.clock.get_default()
-        
+
+        if not twisted_queue is None:
+            self.register_twisted_queue(twisted_queue)        
+
+    def register_twisted_queue(self, twisted_queue):
         # The queue containing Twisted function references to call
         self._twisted_call_queue = twisted_queue
-
+        
         # Schedule a method to deal with Twisted calls
         self.clock.schedule_interval(self._make_twisted_calls, 0.1)
 
@@ -125,8 +129,11 @@ class PygletReactor(_threadedselect.ThreadedSelectReactor):
         self._twistedQueue = Queue.Queue()
 
         if not hasattr(self, "pygletEventLoop"):
+            log.msg("No Pyglet event loop registered. Using the default.")
             self.registerPygletEventLoop(EventLoop(self._twistedQueue))
-
+        else:
+            self.pygletEventLoop.register_twisted_queue(self._twistedQueue)
+        
         # Start the Twisted thread.
         self.interleave(self._runInMainThread,
                         installSignalHandlers=installSignalHandlers)
