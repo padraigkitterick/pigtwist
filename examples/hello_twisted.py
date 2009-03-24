@@ -25,6 +25,10 @@ def on_draw():
 @window.event
 def on_close():
     reactor.stop()
+    
+    # Return true to ensure that no other handlers
+    # on the stack receive the on_close event
+    return True
 
 # Schedule a function call in Pyglet
 def runEverySecondPyglet(dt):
