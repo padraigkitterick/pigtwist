@@ -17,7 +17,7 @@ Pyglet and Twisted:
 There is no need to call pyglet.app.run().
 
 If you want to subclass pyglet.app.EventLoop (Pyglet 1.1)
-or pyglet.app.base.EventLoop (Pyglet 1.2), dont! Subclass
+or pyglet.app.base.EventLoop (Pyglet 1.2), don't! Subclass
 pygletreactor.EventLoop instead, which contains logic
 to schedule Twisted events to run from Pyglet. Then,
 register your new event loop as follows:
@@ -25,6 +25,18 @@ register your new event loop as follows:
     from twisted.internet import reactor
     reactor.registerPygletEventLoop(yourEventLoop)
     reactor.run()
+
+Twisted function calls are scheduled within the Pyglet event
+loop. By default, pending calls are dealt with every 0.1 secs.
+This frequency can be altered by passing a different 'call_interval'
+to reactor.run(), e.g. the following:
+
+	reactor.run(call_interval=1/20.)
+
+will result in Twisted function calls being dealt with every
+0.05 secs within the Pyglet event loop. If your code results in
+a large number of Twisted calls that need to be processed as
+quickly as possible, decreasing the call_interval will help.
 
 Based on the wxPython reactor (wxreactor.py) that ships with Twisted.
 
@@ -48,7 +60,7 @@ except ImportError:
 
 class EventLoop(pyglet_event_loop):
 
-    def __init__(self, twisted_queue=None):
+    def __init__(self, twisted_queue=None, call_interval=1/10.):
         """Set up extra cruft to integrate Twisted calls."""
 
         pyglet_event_loop.__init__(self)
@@ -58,23 +70,22 @@ class EventLoop(pyglet_event_loop):
             self.clock = pyglet.clock.get_default()
 
         if not twisted_queue is None:
-            self.register_twisted_queue(twisted_queue)        
+            self.register_twisted_queue(twisted_queue, call_interval)        
 
-    def register_twisted_queue(self, twisted_queue):
+    def register_twisted_queue(self, twisted_queue, call_interval):
         # The queue containing Twisted function references to call
         self._twisted_call_queue = twisted_queue
         
         # Schedule a method to deal with Twisted calls
-        self.clock.schedule_interval(self._make_twisted_calls, 0.1)
+        self.clock.schedule_interval_soft(self._make_twisted_calls, call_interval)
 
     def _make_twisted_calls(self, dt):
         """Check if we need to make function calls for Twisted."""
         
         try:
-            # Clear the current queue of calls
-            while 1:
-                f = self._twisted_call_queue.get(timeout=0.01)
-                f()
+            # Deal with the next function call in the queue
+            f = self._twisted_call_queue.get(False)
+            f()
         except Queue.Empty:
             pass
 
@@ -120,7 +131,7 @@ class PygletReactor(_threadedselect.ThreadedSelectReactor):
         if hasattr(self, "pygletEventLoop"):
             self.pygletEventLoop.exit()
 
-    def run(self, installSignalHandlers=True):
+    def run(self, call_interval=1/10., installSignalHandlers=True):
         """Start the Pyglet event loop and Twisted reactor."""
 
         # Create a queue to hold Twisted events that will be executed
@@ -130,9 +141,9 @@ class PygletReactor(_threadedselect.ThreadedSelectReactor):
 
         if not hasattr(self, "pygletEventLoop"):
             log.msg("No Pyglet event loop registered. Using the default.")
-            self.registerPygletEventLoop(EventLoop(self._twistedQueue))
+            self.registerPygletEventLoop(EventLoop(self._twistedQueue, call_interval))
         else:
-            self.pygletEventLoop.register_twisted_queue(self._twistedQueue)
+            self.pygletEventLoop.register_twisted_queue(self._twistedQueue, call_interval)
         
         # Start the Twisted thread.
         self.interleave(self._runInMainThread,
