@@ -17,7 +17,7 @@ Pyglet and Twisted:
 There is no need to call pyglet.app.run().
 
 If you want to subclass pyglet.app.EventLoop (Pyglet 1.1)
-or pyglet.app.base.EventLoop (Pyglet 1.2), don't! Subclass
+or pyglet.app.base.EventLoop (Pyglet 1.1.2), don't! Subclass
 pygletreactor.EventLoop instead, which contains logic
 to schedule Twisted events to run from Pyglet. Then,
 register your new event loop as follows:
@@ -51,7 +51,7 @@ from twisted.python import log, runtime
 from twisted.internet import _threadedselect
 
 try:
-    # Pyglet 1.2
+    # Pyglet 1.1.2
     from pyglet.app.base import EventLoop
     pyglet_event_loop = pyglet.app.base.EventLoop
 except ImportError:
