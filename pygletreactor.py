@@ -2,45 +2,9 @@
 This module provides Pyglet/Twisted integration using
 the new (Pyglet v1.1) pyglet.app event loop.
 
-To use this reactor, include the following statements
-_before_ importing the standard Twisted reactor:
+See the README for usage information.
 
-    import pygletreactor
-    pygletreactor.install()
-
-Then, just import reactor and call run() to start both
-Pyglet and Twisted:
-
-    from twisted.internet import reactor
-    reactor.run()
-
-There is no need to call pyglet.app.run().
-
-If you want to subclass pyglet.app.EventLoop (Pyglet 1.1)
-or pyglet.app.base.EventLoop (Pyglet 1.1.2), don't! Subclass
-pygletreactor.EventLoop instead, which contains logic
-to schedule Twisted events to run from Pyglet. Then,
-register your new event loop as follows:
-
-    from twisted.internet import reactor
-    reactor.registerPygletEventLoop(yourEventLoop)
-    reactor.run()
-
-Twisted function calls are scheduled within the Pyglet event
-loop. By default, pending calls are dealt with every 0.1 secs.
-This frequency can be altered by passing a different 'call_interval'
-to reactor.run(), e.g. the following:
-
-	reactor.run(call_interval=1/20.)
-
-will result in Twisted function calls being dealt with every
-0.05 secs within the Pyglet event loop. If your code results in
-a large number of Twisted calls that need to be processed as
-quickly as possible, decreasing the call_interval will help.
-
-Based on the wxPython reactor (wxreactor.py) that ships with Twisted.
-
-Padraig Kitterick <p.kitterick@psych.york.ac.uk>
+Padraig Kitterick <padraigkitterick@gmail.com>
 """
 
 import Queue
