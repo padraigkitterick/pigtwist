@@ -10,6 +10,7 @@ Padraig Kitterick <padraigkitterick@gmail.com>
 import Queue
 
 import pyglet
+import warnings
 
 from twisted.python import log, runtime
 from twisted.internet import _threadedselect
@@ -98,6 +99,8 @@ class PygletReactor(_threadedselect.ThreadedSelectReactor):
     def run(self, call_interval=1/10., installSignalHandlers=True):
         """Start the Pyglet event loop and Twisted reactor."""
 
+        if call_interval is 0:
+            warnings.warn("CALL INTERVAL SET TO 0. THIS WILL PREVENT WINDOWS FROM CLOSING OR UPDATING") 
         # Create a queue to hold Twisted events that will be executed
         # before stopping Twisted in the event that Pyglet has been stopped.
         self._postQueue = Queue.Queue()
