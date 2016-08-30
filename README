@@ -4,7 +4,7 @@ the new (Pyglet v1.1) pyglet.app event loop.
 To use this reactor, include the following statements
 _before_ importing the standard Twisted reactor:
 
-    import pygletreactor
+    from pigtwist import pygletreactor
     pygletreactor.install()
 
 Then, just import reactor and call run() to start both
