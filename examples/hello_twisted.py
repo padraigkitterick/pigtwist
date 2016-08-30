@@ -5,7 +5,7 @@ with either calls.
 """
 import pyglet
 
-import pygletreactor
+from pigtwist import pygletreactor
 pygletreactor.install() # <- this must come before...
 from twisted.internet import reactor, task # <- ...importing this reactor!
 
