@@ -40,3 +40,7 @@ quickly as possible, decreasing the call_interval will help.
 Based on the wxPython reactor (wxreactor.py) that ships with Twisted.
 
 Padraig Kitterick <padraigkitterick@gmail.com>
+
+Contributors:
+Jesse Fish (erebuswolf@github)
+Steve Kendall (kendase3@github)
